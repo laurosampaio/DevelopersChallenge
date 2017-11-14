@@ -1,0 +1,77 @@
+﻿@model IEnumerable<DevChallengeL1.Models.Team>
+
+@{
+    ViewBag.Title = "Teams";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+
+<p>
+    @Html.ActionLink("Add Team", "Create", "Team", null, new { @class = "btn btn-primary" })
+</p>
+
+<table id="teams-data-table" class="table table-bordered table-hover">
+    <thead>
+    <th> Team Name</th>
+    <th> Actions </th>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $("#teams-data-table").DataTable({
+                ajax: {
+                    url: "/Team/Teams",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "Name"
+                    },
+                    {
+                        data: "Id",
+                        render: function (data) {
+
+                            return '<button class="btn-link js-update" data-team-id=' + data + '>Edit</button> | <button class="btn-link js-delete" data-team-id=' + data + '>Delete</button>';
+
+                        }
+                    }
+                ]
+        });
+
+
+        $("#teams-data-table").on("click", ".js-delete", function () {
+            var button = $(this);
+
+            bootbox.confirm("Are you sure you want to delete this Team?", function (result) {
+                if (result) {
+                    $.ajax({
+                        url: "/Team/Delete/" + button.attr("data-team-id"),
+                        method: "DELETE",
+                        success: function () {
+                            table.row(button.parents("tr")).remove().draw();
+                        }
+                    });
+                }
+            });
+            });
+
+        $("#teams-data-table").on("click", ".js-update", function () {
+            var button = $(this);
+            window.location.href = "@Url.Action("Edit","Team")?id=" + button.attr("data-team-id");
+            return false;
+        });
+
+    });
+    </script>
+}
+@* 
+    ##### Point of attention for refactoring #####
+    =>  Add validations to display messages according to context
+*@
+<h4>*Adding or deleting team will exclude tournament points if there are</h4>
+<h4>**To perform a tournament, groups of 4, 8, 16, 32, etc. are required.</h4>

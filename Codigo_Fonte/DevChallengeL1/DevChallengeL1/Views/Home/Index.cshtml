@@ -1,0 +1,105 @@
+﻿@model IEnumerable<DevChallengeL1.Models.Team>
+@{
+    ViewBag.Title = "Tournament";
+}
+<h2>@ViewBag.Title.</h2>
+
+<br>
+
+@if (Model.Count() > 3)
+{
+
+<div id="save">
+   
+    <script type="text/javascript">
+
+
+        //Used to inicialize Bracket
+        var saveData = GetData();        
+
+         //Get data from service
+        function GetData() {
+
+            var iniSaveData;
+           
+           
+            $.ajax(
+                {
+                    dataType: 'text',
+                    headers: {
+                        Accept: "application/text",
+                        "Access-Control-Allow-Origin": "*"
+                    },
+                    type: 'GET',
+                    url: '/Home/GetTournament/',
+                    success: function (data) {
+
+                        iniSaveData = JSON.parse(data);
+
+                        var container = $('div#save .tournament')
+                        container.bracket({
+                            teamWidth: 100,
+                            scoreWidth: 30,
+                            matchMargin: 50,
+                            roundMargin: 80,
+                            disableToolbar: true,
+                            disableTeamEdit: true,
+                            init: iniSaveData,
+                            save: saveFn,
+                            userData: "/Home/Save/"
+                        })
+
+                        // Inquiry the current data
+                        var data = container.bracket('data')
+
+
+                    },
+                    error: function (data) {
+                        console.log("error => GET /Home/GetTournament/");
+                    }
+                });
+        }
+
+
+        /* Called whenever bracket is modified
+         *
+         * data:     changed bracket object in format given to init
+         * userData: optional data given when bracket is created.
+         */
+        function saveFn(data, userData) {
+            var json = jQuery.toJSON(data);
+           
+            $.ajax({
+                type: "POST",
+                url: "/HOME/Save/",                
+                data: json,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log("SaveOk")
+                },
+                failure: function (errMsg) {
+                    console.log("Save failure =" + errMsg);
+                }
+            });
+            
+        }
+                
+       
+    </script>
+    <div class="tournament">
+
+    </div>
+
+</div>
+
+<h4>*TBD = To Be Defined</h4>
+
+}
+else if (Model.Count() == 0)
+{
+    <h4>No teams registered for the tournament</h4>
+
+}else if (Model.Count() < 4){
+    <h4>At least 4 clubs are required for a tournament </h4>
+}
